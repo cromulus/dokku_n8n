@@ -17,4 +17,4 @@ https://docs.n8n.io/hosting/environment-variables/
 
 perhaps: https://www.andreffs.com/blog/setup-n8n-on-kubernetes/
 
-How to Upgrade? change the variable in the Dockerfile and push.
+How to Upgrade? i think force a rebuild
