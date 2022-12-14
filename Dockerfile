@@ -10,7 +10,7 @@ USER root
 # it needs to build it correctly.
 RUN apk --update add --virtual build-dependencies python3 build-base build-dependencies ca-certificates && \
 	npm config set python "$(which python3)" && \
-	npm_config_user=root npm update && npm_config_user=root npm install -g full-icu n8n && \
+	npm_config_user=root npm install -g full-icu n8n && \
 	apk del build-dependencies \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root;
 
