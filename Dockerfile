@@ -10,7 +10,7 @@ ARG N8N_VERSION=0.207.1
 # it needs to build it correctly.
 RUN apk --update add --virtual build-dependencies python3 build-base build-dependencies ca-certificates && \
 	npm config set python "$(which python3)" && \
-	npm_config_user=root npm@$N8N_VERSION install -g full-icu n8n && \
+	npm_config_user=root npm install -g full-icu n8n@$N8N_VERSION && \
 	apk del build-dependencies \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root;
 
