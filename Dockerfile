@@ -1,10 +1,11 @@
 FROM node:18-alpine
 
 # Update everything and install needed dependencies
-RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver
+RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver gnu-libiconv
 
 # # Set a custom user to not have n8n run as root
 USER root
+RUN npm install -g npm@latest
 ARG N8N_VERSION=0.212.0
 # Install n8n and the also temporary all the packages
 # it needs to build it correctly.
@@ -25,7 +26,7 @@ RUN apk --no-cache add --virtual fonts msttcorefonts-installer fontconfig && \
 	find  /usr/share/fonts/truetype/msttcorefonts/ -type l -exec unlink {} \; \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root
 ## these cause errors
-RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-text-manipulation n8n-nodes-browserless
+RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-text-manipulation n8n-nodes-browserless n8n-nodes-puppeteer-extended
 ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
 COPY . /
 RUN /setup.sh
