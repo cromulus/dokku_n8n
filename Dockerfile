@@ -26,7 +26,7 @@ RUN apk --no-cache add --virtual fonts msttcorefonts-installer fontconfig && \
 	find  /usr/share/fonts/truetype/msttcorefonts/ -type l -exec unlink {} \; \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root
 ## these cause errors
-RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-text-manipulation n8n-nodes-puppeteer-extended
+# RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-text-manipulation n8n-nodes-puppeteer-extended
 ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
 COPY . /
 RUN /setup.sh
