@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:16-alpine
 
 # Update everything and install needed dependencies
 RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver gnu-libiconv
@@ -15,8 +15,8 @@ RUN apk --update add --virtual build-dependencies python3 build-base build-depen
 	apk del build-dependencies \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root;
 
-ENV NODE_FUNCTION_ALLOW_EXTERNAL=node-redis,great-circle-distance,lodash,jquery,libphonenumber-js,cryptojs
-RUN npm_config_user=root npm install -g node-redis great-circle-distance lodash jquery libphonenumber-js cryptojs
+ENV NODE_FUNCTION_ALLOW_EXTERNAL=node-redis,great-circle-distance,lodash,jquery,cryptojs
+RUN npm_config_user=root npm install -g node-redis great-circle-distance lodash jquery  cryptojs
 
 # Install fonts
 RUN apk --no-cache add --virtual fonts msttcorefonts-installer fontconfig && \
