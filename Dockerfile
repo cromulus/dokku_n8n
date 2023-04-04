@@ -6,12 +6,12 @@ RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc 
 # # Set a custom user to not have n8n run as root
 USER root
 
-ARG N8N_VERSION=0.221.2
+# ARG N8N_VERSION=0.221.2 # always install the latest
 # Install n8n and the also temporary all the packages
 # it needs to build it correctly.
 RUN apk --update add --virtual build-dependencies python3 build-base build-dependencies ca-certificates && \
 	npm config set python "$(which python3)" && \
-	npm_config_user=root npm install -g full-icu n8n@$N8N_VERSION && \
+	npm_config_user=root npm install -g full-icu n8n && \
 	apk del build-dependencies \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root;
 
