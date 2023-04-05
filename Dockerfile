@@ -15,8 +15,9 @@ RUN apk --update add --virtual build-dependencies python3 build-base build-depen
 	apk del build-dependencies \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root;
 
-ENV NODE_FUNCTION_ALLOW_EXTERNAL=node-redis,great-circle-distance,lodash,jquery,cryptojs
-RUN npm_config_user=root npm install -g node-redis great-circle-distance lodash jquery  cryptojs
+ENV NODE_FUNCTION_ALLOW_EXTERNAL=node-redis,great-circle-distance,lodash,jquery,cryptojs,email-addresses
+
+RUN npm_config_user=root npm install -g node-redis great-circle-distance lodash jquery cryptojs email-addresses
 
 # Install fonts
 RUN apk --no-cache add --virtual fonts msttcorefonts-installer fontconfig && \
