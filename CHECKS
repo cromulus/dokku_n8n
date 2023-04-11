@@ -1,4 +1,4 @@
-WAIT=30     # Wait 1/2 minute
-TIMEOUT=60  # Timeout after a minute
-ATTEMPTS=10 # Attempt checks 10 times
+WAIT=10
+TIMEOUT=60
+ATTEMPTS=10
 / Sign
