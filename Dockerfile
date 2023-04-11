@@ -1,7 +1,7 @@
 FROM node:16-alpine
 
 # Update everything and install needed dependencies
-RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver gnu-libiconv
+RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver gnu-libiconv pn httpie redis
 
 # # Set a custom user to not have n8n run as root
 USER root
