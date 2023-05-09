@@ -7,7 +7,7 @@ RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc 
 # # Set a custom user to not have n8n run as root
 USER root
 
-ARG N8N_VERSION=0.225.1
+ARG N8N_VERSION=0.227.0
  # always install the latest
 # Install n8n and the also temporary all the packages
 # it needs to build it correctly.
