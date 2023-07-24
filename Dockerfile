@@ -1,11 +1,11 @@
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Update everything and install needed dependencies
 # some are needed to build n8n and some are stuff I want to run on the commandline.
 RUN apk add --update graphicsmagick tzdata git su-exec grep python3 py3-pip gcc make g++ zlib-dev portaudio portaudio-dev swig curl bash cmake boost-dev docker openrc ffmpeg chromium chromium-chromedriver gnu-libiconv pn httpie redis
 
 # # Set a custom user to not have n8n run as root
-USER root
+
 
 ARG N8N_VERSION=0.236.3
  # always install the latest
@@ -29,8 +29,9 @@ RUN apk --no-cache add --virtual fonts msttcorefonts-installer fontconfig && \
 	find  /usr/share/fonts/truetype/msttcorefonts/ -type l -exec unlink {} \; \
 	&& rm -rf /root /tmp/* /var/cache/apk/* && mkdir /root
 ## these cause errors
-RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-browserless
+#RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-browserless
 ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
+USER node
 COPY . /
 RUN /setup.sh
 
