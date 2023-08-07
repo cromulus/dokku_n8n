@@ -14,10 +14,10 @@ QUEUE_BULL_REDIS_HOST=$(echo $REDIS_URL | grep -oP "redis://.*@\K(.+?):" | cut -
 QUEUE_BULL_REDIS_PORT=$(echo $REDIS_URL | grep -oP "redis://.*@.*:\K(\d+)/" | cut -d/ -f1)
 fi
 
-if [ -d /root/.n8n ] ; then
-  chmod o+rx /root
-  chown -R node /root/.n8n
-  ln -s /root/.n8n /home/node/
-fi
+# if [ -d /root/.n8n ] ; then
+#   chmod o+rx /root
+#   chown -R node /root/.n8n
+#   ln -s /root/.n8n /home/node/
+# fi
 
-chown -R node /home/node
+# chown -R node /home/node
