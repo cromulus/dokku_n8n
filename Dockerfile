@@ -19,12 +19,14 @@ RUN \
 ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
 
 ENV NODE_ENV=production
+ENV N8N_CUSTOM_EXTENSIONS=/home/node/custom
+ENV NODE_FUNCTION_ALLOW_EXTERNAL=lodash
 RUN set -eux; \
 	apkArch="$(apk --print-arch)"; \
 	case "$apkArch" in \
 	'armv7') apk --no-cache add --virtual build-dependencies python3 build-base;; \
 	esac && \
-	npm install -g --omit=dev n8n && \
+	npm install -g --omit=dev n8n lodash && \
 	case "$apkArch" in \
 	'armv7') apk del build-dependencies;; \
 	esac && \
