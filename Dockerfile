@@ -29,9 +29,10 @@ RUN set -eux; \
 	npm install -g --omit=dev n8n lodash && \
 	case "$apkArch" in \
 	'armv7') apk del build-dependencies;; \
-	esac && \
-	find /usr/local/lib/node_modules/n8n -type f -name "*.ts" -o -name "*.js.map" -o -name "*.vue" | xargs rm && \
-	rm -rf /root/.npm
+	esac
+	# && \
+	# find /usr/local/lib/node_modules/n8n -type f -name "*.ts" -o -name "*.js.map" -o -name "*.vue" | xargs rm && \
+	# rm -rf /root/.npm
 
 USER root
 
