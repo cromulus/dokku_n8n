@@ -32,7 +32,7 @@ RUN set -eux; \
 	# && \
 	# find /usr/local/lib/node_modules/n8n -type f -name "*.ts" -o -name "*.js.map" -o -name "*.vue" | xargs rm && \
 	# rm -rf /root/.npm
-RUN mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install n8n-nodes-langchain n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
+RUN mkdir -p /home/node/.n8n/nodes && cd /home/node/.n8n/nodes && npm install @n8n/n8n-nodes-langchain n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
 USER root
 
 
