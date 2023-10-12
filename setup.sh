@@ -14,7 +14,7 @@ QUEUE_BULL_REDIS_HOST=$(echo $REDIS_URL | grep -o "redis://.*@\K(.+?):" | cut -d
 QUEUE_BULL_REDIS_PORT=$(echo $REDIS_URL | grep -o "redis://.*@.*:\K(\d+)/" | cut -d/ -f1)
 fi
 
-echo "export $PATH:/home/node/.local/bin" >> /etc/profile
+echo "export $PATH:/home/node/.local/bin" >> /home/node/.profile
 # if [ -d /root/.n8n ] ; then
 #   chmod o+rx /root
 #   chown -R node /root/.n8n
