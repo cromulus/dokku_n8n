@@ -20,6 +20,7 @@ ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
 
 ENV NODE_ENV=production
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=lodash
+ENV N8N_CUSTOM_EXTENSIONS=/root/.n8n/nodes
 RUN set -eux; \
 	apkArch="$(apk --print-arch)"; \
 	case "$apkArch" in \
@@ -32,7 +33,7 @@ RUN set -eux; \
 	# && \
 	# find /usr/local/lib/node_modules/n8n -type f -name "*.ts" -o -name "*.js.map" -o -name "*.vue" | xargs rm && \
 	# rm -rf /root/.npm
-RUN mkdir -p /root/.n8n/nodes && cd /root/.n8n/nodes && npm install @n8n/n8n-nodes-langchain n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
+RUN mkdir -p /root/.n8n/nodes && cd /root/.n8n/nodes && npm install @n8n/n8n-nodes-langchain @n8n/chat n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
 USER root
 
 
