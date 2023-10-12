@@ -13,7 +13,7 @@ RUN \
 	update-ms-fonts && \
 	fc-cache -f && \
 	apk del fonts && \
-	find  /usr/share/fonts/truetype/msttcorefonts/ -type lstall -exec unlink {} \; && \
+	find  /usr/share/fonts/truetype/msttcorefonts/ -type l -exec unlink {} \; && \
 	rm -rf /var/cache/apk/* /tmp/*
 
 ENV NODE_ICU_DATA /usr/local/lib/node_modules/full-icu
