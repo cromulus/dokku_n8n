@@ -1,4 +1,4 @@
-FROM node:n8n-io/n8n:ai-beta
+FROM n8n-io/n8n:ai-beta
 
 ENV NODE_ENV=production
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=lodash
