@@ -5,7 +5,7 @@ WORKDIR /home/node
 COPY .npmrc /usr/local/etc/npmrc
 
 RUN \
-	apk add --update git openssh graphicsmagick tini tzdata ca-certificates libc6-compat htop && \
+	apk add --update git bash openssh graphicsmagick tini tzdata ca-certificates libc6-compat htop && \
 	npm install -g npm@9.5.1 full-icu && \
 	rm -rf /var/cache/apk/* /root/.npm /tmp/* && \
 	# Install fonts
