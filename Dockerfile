@@ -9,6 +9,8 @@ RUN pip3 install --no-cache --upgrade pip setuptools wheel
 
 RUN mkdir -p ~/.n8n/nodes && cd ~/.n8n/nodes && npm install n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
 ENV NODE_ENV=production
+COPY reuirements.txt /tmp
+RUN pip3 install -r /tmp/requirements.txt
 COPY setup.sh /
 RUN /setup.sh
 ENTRYPOINT []
