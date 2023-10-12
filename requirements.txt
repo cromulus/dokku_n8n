@@ -1,2 +1,2 @@
-search-engine-parser
-"search-engine-parser[cli]"
+search-engine-parser==0.6.8
+search-engine-parser[cli]
