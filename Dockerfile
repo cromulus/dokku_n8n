@@ -26,14 +26,14 @@ RUN set -eux; \
 	case "$apkArch" in \
 	'armv7') apk --no-cache add --virtual build-dependencies python3 build-base;; \
 	esac && \
-	npm install -g --omit=dev n8n lodash && \
+	npm install -g --omit=dev n8n lodash @n8n/n8n-nodes-langchain && \
 	case "$apkArch" in \
 	'armv7') apk del build-dependencies;; \
 	esac
 	# && \
 	# find /usr/local/lib/node_modules/n8n -type f -name "*.ts" -o -name "*.js.map" -o -name "*.vue" | xargs rm && \
 	# rm -rf /root/.npm
-
+RUN mkdir ~/.n8n/nodes && cd ~/.n8n/nodes && npm -i @n8n/n8n-nodes-langchain n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-ics-utils n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
 USER root
 
 
