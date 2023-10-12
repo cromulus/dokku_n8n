@@ -6,7 +6,7 @@ RUN apk add --update --no-cache bash python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 USER node
 RUN pip3 install --no-cache --upgrade pip setuptools wheel
-
+RUN npm install lodash
 RUN mkdir -p ~/.n8n/nodes && cd ~/.n8n/nodes && npm install n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation
 ENV NODE_ENV=production
 COPY requirements.txt /home/node
