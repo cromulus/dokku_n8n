@@ -24,7 +24,7 @@ ENV N8N_CUSTOM_EXTENSIONS=/root/.n8n/nodes
 RUN set -eux; \
 	apkArch="$(apk --print-arch)"; \
 	case "$apkArch" in \
-	'armv7') apk --no-cache add --virtual build-dependencies python3 build-base;; \
+	'armv7') apk --no-cache add --virtual curl build-dependencies python3 build-base;; \
 	esac && \
 	npm install -g --omit=dev n8n lodash && \
 	case "$apkArch" in \

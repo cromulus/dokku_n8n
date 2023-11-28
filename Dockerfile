@@ -2,7 +2,7 @@ FROM n8nio/n8n:ai-beta
 USER root
 
 ENV PYTHONUNBUFFERED=1
-RUN apk add --update --no-cache bash python3 && ln -sf python3 /usr/bin/python
+RUN apk add --update --no-cache bash python3 curl && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN apk add --no-cache \
   	chromium \
