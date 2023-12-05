@@ -1,4 +1,4 @@
-FROM n8nio/n8n:latest
+FROM n8nio/n8n:ai-beta
 USER root
 
 ENV PYTHONUNBUFFERED=1
