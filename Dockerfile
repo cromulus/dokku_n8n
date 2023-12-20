@@ -1,16 +1,18 @@
-FROM n8nio/n8n:1.20.0
+FROM n8nio/n8n:1.21.1
 USER root
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache bash python3 curl && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN apk add --no-cache \
-  	chromium \
+  chromium \
   nss \
   freetype \
   harfbuzz \
   ca-certificates \
-  ttf-freefont
+  ttf-freefont \
+  bind-tools
+
 USER node
 RUN pip3 install --no-cache --upgrade pip setuptools wheel
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
