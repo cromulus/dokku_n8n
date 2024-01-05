@@ -1,4 +1,4 @@
-FROM n8nio/n8n:1.23.0
+FROM n8nio/n8n:1.21.1
 USER root
 
 ENV PYTHONUNBUFFERED=1
