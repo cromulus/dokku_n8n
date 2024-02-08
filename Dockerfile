@@ -3,7 +3,7 @@ USER root
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache bash python3 curl && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
+RUN python3 -m venv .venv && source .venv/bin/activate && python3 -m ensurepip
 RUN apk add --no-cache \
   chromium \
   nss \
