@@ -16,7 +16,7 @@ USER node
 COPY requirements.txt /home/node
 RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
- python3 -m ensurepip &&
+ python3 -m ensurepip && \
  pip install --no-cache --upgrade pip setuptools wheel && \
  pip install -r /home/node/requirements.txt
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
