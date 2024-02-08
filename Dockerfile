@@ -13,8 +13,12 @@ RUN apk add --no-cache \
   bind-tools
 
 USER node
-RUN python3 -m venv .venv && source .venv/bin/activate && python3 -m ensurepip
-RUN pip install --no-cache --upgrade pip setuptools wheel
+COPY requirements.txt /home/node
+RUN python3 -m venv .venv && \
+ source .venv/bin/activate && \
+ python3 -m ensurepip &&
+ pip install --no-cache --upgrade pip setuptools wheel && \
+ pip install -r /home/node/requirements.txt
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
@@ -22,8 +26,8 @@ RUN npm install lodash pdf-parse filenamify-url
 RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && npm install n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation n8n-nodes-browser @digital-boss/n8n-nodes-google-pubsub n8n-nodes-logger n8n-nodes-advanced-flow n8n-nodes-webpage-content-extractor @denklab/n8n-nodes-memgraph n8n-nodes-turndown-html-to-markdown n8n-nodes-keycloak
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
-COPY requirements.txt /home/node
-RUN pip install -r /home/node/requirements.txt
+
+
 COPY setup.sh /
 RUN /setup.sh
 ENTRYPOINT []
