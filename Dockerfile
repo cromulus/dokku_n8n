@@ -1,4 +1,4 @@
-FROM n8nio/n8n:1.34.2
+FROM n8nio/n8n:1.30.1
 USER root
 
 ENV PYTHONUNBUFFERED=1
@@ -13,7 +13,7 @@ RUN apk add --no-cache \
   bind-tools
 
 USER node
-COPY requirements.txt /home/node
+COPY requirements.txt /home/nodeq
 RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
@@ -23,7 +23,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
 RUN npm install lodash pdf-parse filenamify-url @mozilla/readability jsdom
-RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && npm install n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation n8n-nodes-browser @digital-boss/n8n-nodes-google-pubsub n8n-nodes-logger n8n-nodes-advanced-flow n8n-nodes-webpage-content-extractor n8n-nodes-turndown-html-to-markdown n8n-nodes-keycloak
+RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && npm install n8n-nodes-carbonejs n8n-nodes-ldap n8n-nodes-chatwoot n8n-nodes-document-generator n8n-nodes-text-manipulation n8n-nodes-browser @digital-boss/n8n-nodes-google-pubsub n8n-nodes-logger n8n-nodes-advanced-flow n8n-nodes-webpage-content-extractor n8n-nodes-turndown-html-to-markdown n8n-nodes-keycloak n8n-nodes-globals
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 
