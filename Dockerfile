@@ -13,7 +13,7 @@ RUN apk add --no-cache \
   bind-tools
 
 USER node
-COPY requirements.txt /home/nodeq
+COPY requirements.txt /home/node
 RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
