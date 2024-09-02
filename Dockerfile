@@ -12,7 +12,7 @@ RUN apk add --no-cache \
   ca-certificates \
   ttf-freefont \
   bind-tools \
-  imagemagick \
+  imagemagick
 
 USER node
 COPY requirements.txt /home/node
