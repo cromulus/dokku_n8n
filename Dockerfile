@@ -11,7 +11,8 @@ RUN apk add --no-cache \
   harfbuzz \
   ca-certificates \
   ttf-freefont \
-  bind-tools
+  bind-tools \
+  imagemagick \
 
 USER node
 COPY requirements.txt /home/node
