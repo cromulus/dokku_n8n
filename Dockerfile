@@ -20,7 +20,7 @@ COPY requirements.txt /home/node
 RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
- pip install --no-cache --upgrade pip setuptools wheel tscribe && \
+ pip install --no-cache --upgrade pip setuptools wheel tscribe playwright && \
  pip install -r /home/node/requirements.txt
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
