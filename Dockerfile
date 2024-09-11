@@ -16,12 +16,13 @@ RUN apk add --no-cache \
   imagemagick
 
 USER node
-#COPY requirements.txt /home/node
+WORKDIR /home/node
 RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
- pip install --no-cache --upgrade pip setuptools wheel tscribe playwright search-engine-parser
- #pip install -r /home/node/requirements.txt
+ pip install --no-cache --upgrade pip && \
+ pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser "search-engine-parser[cli]"
+
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
