@@ -21,7 +21,7 @@ RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
  pip install --no-cache --upgrade pip && \
- pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser "search-engine-parser[cli]"
+ pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser "search-engine-parser[cli]" tweetnacl
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
