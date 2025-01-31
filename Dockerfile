@@ -21,7 +21,7 @@ RUN python3 -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
  pip install --no-cache --upgrade pip && \
- pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser "search-engine-parser[cli]" nacl
+ pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser "search-engine-parser[cli]"
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -32,6 +32,7 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && npm install n8n-nodes-carbon
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
+ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
 COPY setup.sh /
 RUN /setup.sh
