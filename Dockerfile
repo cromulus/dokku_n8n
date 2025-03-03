@@ -1,4 +1,5 @@
-FROM n8nio/n8n:1.80.3
+ARG CACHEBUST=1
+FROM n8nio/n8n:latest
 
 USER root
 
