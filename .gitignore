@@ -1,3 +1,5 @@
 *.dump
 .DS_Store
 google_stuff/*
+.lsp
+.clj-kondo
