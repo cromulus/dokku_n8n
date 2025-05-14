@@ -2,7 +2,6 @@ ARG CACHEBUST=1
 FROM n8nio/n8n:latest
 
 USER root
-RUN npm install -g pnpm
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache bash python3 curl && ln -sf python3 /usr/bin/python
