@@ -14,7 +14,9 @@ RUN apk add --no-cache \
   ca-certificates \
   ttf-freefont \
   bind-tools \
-  imagemagick
+  imagemagick \
+  build-base \
+  python3-dev 
 
 USER node
 WORKDIR /home/node
@@ -30,14 +32,26 @@ ENV PYTHONUNBUFFERED=1
 
 RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
 RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
-    pnpm install n8n-nodes-carbonejs n8n-nodes-text-manipulation n8n-nodes-browser n8n-nodes-logger n8n-nodes-advanced-flow n8n-nodes-webpage-content-extractor n8n-nodes-turndown-html-to-markdown n8n-nodes-globals @n8n-zengchao/n8n-nodes-browserless n8n-nodes-puppeteer-extended n8n-nodes-tweetnacl n8n-nodes-odata n8n-nodes-websockets-lite
+    pnpm install n8n-nodes-carbonejs \
+     n8n-nodes-text-manipulation \
+     n8n-nodes-browser \
+     n8n-nodes-logger \
+     n8n-nodes-advanced-flow \
+     n8n-nodes-webpage-content-extractor \
+     n8n-nodes-turndown-html-to-markdown \
+     n8n-nodes-globals \
+     @n8n-zengchao/n8n-nodes-browserless \
+     n8n-nodes-puppeteer-extended \
+     n8n-nodes-tweetnacl \
+     n8n-nodes-odata \
+     n8n-nodes-websockets-lite
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
-COPY setup.sh /
-RUN /setup.sh
+COPY setup.sh /home/node/setup.sh
+RUN chmod +x /home/node/setup.sh && /home/node/setup.sh
 ENTRYPOINT []
 EXPOSE 5678/tcp
