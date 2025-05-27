@@ -52,6 +52,6 @@ ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
 COPY setup.sh /home/node/setup.sh
-RUN chmod +x /home/node/setup.sh && /home/node/setup.sh
+RUN /home/node/setup.sh
 ENTRYPOINT []
 EXPOSE 5678/tcp
