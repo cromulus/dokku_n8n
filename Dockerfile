@@ -4,8 +4,8 @@ FROM n8nio/n8n:latest
 USER root
 
 ENV PYTHONUNBUFFERED=1
-RUN apk add --update --no-cache bash python3 curl && ln -sf python3 /usr/bin/python
-RUN apk add --no-cache \
+RUN apk add --update --cache-dir=/cache/apk bash python3 curl && ln -sf python3 /usr/bin/python
+RUN apk add --cache-dir=/cache/apk \
   chromium \
   chromium-chromedriver \
   nss \
@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 
 USER node
 WORKDIR /home/node
-RUN python3 -m venv .venv && \
+RUN python3 --cache-dir=/cache/pip -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
  pip install --no-cache --upgrade pip && \
