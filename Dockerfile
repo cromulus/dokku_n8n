@@ -4,9 +4,7 @@ FROM n8nio/n8n:latest
 USER root
 
 ENV PYTHONUNBUFFERED=1
-RUN setup-apkcache
-RUN apk add --update bash python3 curl && ln -sf python3 /usr/bin/python
-RUN apk add --update\
+RUN --mount=type=cache,target=/etc/apk/cache apk add --update-cache bash python3 curl \
   chromium \
   chromium-chromedriver \
   nss \
