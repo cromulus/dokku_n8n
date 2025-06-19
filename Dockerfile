@@ -54,7 +54,7 @@ ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
-
+# getting the environment variables in the right format
 COPY setup.sh /home/node/setup.sh
 RUN /home/node/setup.sh
 ENTRYPOINT []
