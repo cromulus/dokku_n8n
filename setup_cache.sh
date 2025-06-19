@@ -8,11 +8,12 @@ dokku storage:unmount /var/lib/dokku/data/storage/n8n_apk_cache:/cache/apk 2>/de
 dokku storage:unmount /var/lib/dokku/data/storage/n8n_pip_cache:/cache/pip 2>/dev/null || true
 dokku storage:unmount /var/lib/dokku/data/storage/n8n_pnpm_cache:/cache/pnpm 2>/dev/null || true
 
-# Create persistent directories for apk, pip, and pnpm
-dokku storage:ensure-directory n8n_apk_cache
-dokku storage:ensure-directory n8n_pip_cache
-dokku storage:ensure-directory n8n_pnpm_cache
-dokku storage:ensure-directory n8n_nodes_cache
+# Create persistent directories with correct ownership for node user (1000:1000)
+# Using --chown heroku which sets 1000:1000 ownership (perfect for node user)
+dokku storage:ensure-directory --chown heroku n8n_apk_cache
+dokku storage:ensure-directory --chown heroku n8n_pip_cache
+dokku storage:ensure-directory --chown heroku n8n_pnpm_cache
+dokku storage:ensure-directory --chown heroku n8n_nodes_cache
 
 # Mount them to the correct locations
 dokku storage:mount /var/lib/dokku/data/storage/n8n_apk_cache:/var/cache/apk
