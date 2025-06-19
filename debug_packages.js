@@ -59,7 +59,18 @@ function searchForPkceUsage(filePath) {
       /require\([^)]*pkce-challenge[^)]*\)\.index/g,
       /new.*require\([^)]*pkce-challenge[^)]*\)\.index/g,
       /pkce-challenge.*\.index/g,
-      /new.*pkce.*index/g
+      /new.*pkce.*index/g,
+      // NEW: Look for the specific path pattern from the error
+      /pkce-challenge\/dist\/index\.node\.js/g,
+      /index\.node\.js.*\.index/g,
+      // NEW: Look for eval statements
+      /eval\(/g,
+      /new Function\(/g,
+      /vm\.runInContext/g,
+      /vm\.runInThisContext/g,
+      // NEW: Look for dynamic require patterns
+      /require\(\s*[^)]*\s*\+/g,
+      /require\(\s*`[^`]*\$\{/g,
     ];
     
     const results = [];
@@ -69,31 +80,94 @@ function searchForPkceUsage(filePath) {
       for (const match of matches) {
         const lines = content.substring(0, match.index).split('\n');
         const lineNumber = lines.length;
-        const lineContent = lines[lines.length - 1] + content.substring(match.index).split('\n')[0];
+        const startLine = Math.max(0, lineNumber - 3);
+        const endLine = Math.min(content.split('\n').length, lineNumber + 3);
+        const contextLines = content.split('\n').slice(startLine, endLine);
         
         results.push({
           pattern: pattern.source,
           match: match[0],
           lineNumber,
-          lineContent,
-          context: content.substring(Math.max(0, match.index - 100), match.index + 100)
+          context: contextLines.join('\n'),
+          contextStart: startLine + 1,
+          contextEnd: endLine
         });
       }
     }
     
     // Also check for any pkce-challenge usage
-    if (content.includes('pkce-challenge')) {
-      const pkceLines = content.split('\n')
-        .map((line, i) => ({ line, number: i + 1 }))
-        .filter(({ line }) => line.includes('pkce-challenge'));
-      
-      return { problematic: results, allPkceUsage: pkceLines };
+    const allPkceUsage = [];
+    if (content.includes('pkce-challenge') || content.includes('index.node.js')) {
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('pkce-challenge') || lines[i].includes('index.node.js')) {
+          allPkceUsage.push({
+            line: lines[i],
+            number: i + 1,
+            context: lines.slice(Math.max(0, i-2), Math.min(lines.length, i+3)).join('\n')
+          });
+        }
+      }
     }
     
-    return { problematic: results, allPkceUsage: [] };
+    return { problematic: results, allPkceUsage };
   } catch (e) {
     return { problematic: [], allPkceUsage: [], error: e.message };
   }
+}
+
+async function searchForEvalGenerators(packageName) {
+  const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
+  
+  if (!fs.existsSync(packagePath)) {
+    return [];
+  }
+  
+  const jsFiles = findJSFiles(packagePath);
+  const suspiciousCode = [];
+  
+  for (const file of jsFiles) {
+    try {
+      const content = fs.readFileSync(file, 'utf8');
+      
+      // Look for code that might generate the exact problematic eval
+      const suspiciousPatterns = [
+        // Patterns that could generate: new (require('...').index)()
+        /new\s*\(\s*require\([^)]+\)\.index\s*\)\s*\(/g,
+        // Template strings or concatenation that builds the problematic path
+        /['"`]pkce-challenge\/dist\/index\.node\.js['"`]/g,
+        /['"`].*index\.node\.js['"`]/g,
+        // Function construction patterns
+        /Function\s*\(\s*.*require.*pkce/gi,
+        /eval.*require.*pkce/gi,
+        // Code that might build the eval string
+        /['"`]new\s*\(\s*require\(/g,
+      ];
+      
+      for (const pattern of suspiciousPatterns) {
+        const matches = content.matchAll(pattern);
+        for (const match of matches) {
+          const lines = content.split('\n');
+          const lineIndex = content.substring(0, match.index).split('\n').length - 1;
+          const contextStart = Math.max(0, lineIndex - 5);
+          const contextEnd = Math.min(lines.length, lineIndex + 6);
+          
+          suspiciousCode.push({
+            file: path.relative(packagePath, file),
+            pattern: pattern.source,
+            match: match[0],
+            lineNumber: lineIndex + 1,
+            context: lines.slice(contextStart, contextEnd).join('\n'),
+            fullLine: lines[lineIndex]
+          });
+        }
+      }
+    } catch (e) {
+      // Ignore file read errors
+    }
+  }
+  
+  return suspiciousCode;
 }
 
 async function analyzePackageFiles(packageName) {
@@ -120,7 +194,7 @@ async function analyzePackageFiles(packageName) {
     const analysis = searchForPkceUsage(file);
     
     if (analysis.allPkceUsage.length > 0) {
-      console.log(`   📄 ${path.relative(packagePath, file)} uses pkce-challenge`);
+      console.log(`   📄 ${path.relative(packagePath, file)} uses pkce-challenge or index.node.js`);
       results.filesWithPkce.push({
         file: path.relative(packagePath, file),
         fullPath: file,
@@ -128,9 +202,12 @@ async function analyzePackageFiles(packageName) {
         problematic: analysis.problematic
       });
       
-      // Print the actual usage
+      // Print the actual usage with more context
       for (const usage of analysis.allPkceUsage) {
         console.log(`      Line ${usage.number}: ${usage.line.trim()}`);
+        if (usage.context && usage.context !== usage.line) {
+          console.log(`      Context:\n${usage.context.split('\n').map(l => `        ${l}`).join('\n')}`);
+        }
       }
     }
     
@@ -144,9 +221,24 @@ async function analyzePackageFiles(packageName) {
       
       for (const issue of analysis.problematic) {
         console.log(`      ❌ Line ${issue.lineNumber}: ${issue.match}`);
-        console.log(`         Context: ${issue.context.replace(/\n/g, ' ')}`);
+        console.log(`         Pattern: ${issue.pattern}`);
+        console.log(`         Context (lines ${issue.contextStart}-${issue.contextEnd}):`);
+        console.log(issue.context.split('\n').map(l => `           ${l}`).join('\n'));
       }
     }
+  }
+
+  // Also search for eval generators
+  const evalGenerators = await searchForEvalGenerators(packageName);
+  if (evalGenerators.length > 0) {
+    console.log(`   🧨 SUSPICIOUS EVAL GENERATORS FOUND:`);
+    for (const gen of evalGenerators) {
+      console.log(`      📄 ${gen.file}:${gen.lineNumber}`);
+      console.log(`         Match: ${gen.match}`);
+      console.log(`         Full line: ${gen.fullLine}`);
+      console.log(`         Context:\n${gen.context.split('\n').map(l => `           ${l}`).join('\n')}`);
+    }
+    results.evalGenerators = evalGenerators;
   }
   
   return results;
