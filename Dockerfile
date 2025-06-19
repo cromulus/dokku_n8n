@@ -45,11 +45,11 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      n8n-nodes-text-manipulation \
      n8n-nodes-turndown-html-to-markdown \
      n8n-nodes-tweetnacl \
-     github:LogeswaranA/n8n-nodes-graphiti \
-     github:cromulus/n8n-nodes-twenty#ai-tools \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
      n8n-openapi-node
+#     github:cromulus/n8n-nodes-graphiti \
+#     github:cromulus/n8n-nodes-twenty \
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
