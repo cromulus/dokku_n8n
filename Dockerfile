@@ -47,7 +47,8 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      github:cromulus/n8n-nodes-graphiti \
      github:cromulus/n8n-nodes-twenty \
      n8n-nodes-webpage-content-extractor \
-     n8n-nodes-websockets-lite
+     n8n-nodes-websockets-lite \
+     n8n-nodes-browser
      # n8n-openapi-node # DO NOT ADD THIS NODE
 
 # Add diagnostic script and run it

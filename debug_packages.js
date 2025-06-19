@@ -50,304 +50,196 @@ function findJSFiles(dir, files = []) {
   return files;
 }
 
-function searchForPkceUsage(filePath) {
+function searchForExactProblem(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     
-    // Look for the problematic pattern: require(...).index
-    const problematicPatterns = [
+    // Look for the EXACT problematic string that's causing the error
+    const exactProblems = [
+      // The exact error pattern
+      /pkce-challenge\/dist\/index\.node\.js.*\.index/g,
       /require\([^)]*pkce-challenge[^)]*\)\.index/g,
-      /new.*require\([^)]*pkce-challenge[^)]*\)\.index/g,
-      /pkce-challenge.*\.index/g,
-      /new.*pkce.*index/g,
-      // NEW: Look for the specific path pattern from the error
-      /pkce-challenge\/dist\/index\.node\.js/g,
-      /index\.node\.js.*\.index/g,
-      // NEW: Look for eval statements
-      /eval\(/g,
-      /new Function\(/g,
-      /vm\.runInContext/g,
-      /vm\.runInThisContext/g,
-      // NEW: Look for dynamic require patterns
-      /require\(\s*[^)]*\s*\+/g,
-      /require\(\s*`[^`]*\$\{/g,
+      // More specific patterns
+      /new\s*\(\s*require\([^)]*pkce-challenge[^)]*\)\.index\s*\)/g,
+      // String that might be eval'd
+      /["'`]new\s*\(\s*require\([^)]*pkce-challenge/g,
+      /["'`][^"'`]*pkce-challenge[^"'`]*index[^"'`]*["'`]/g,
     ];
     
     const results = [];
     
-    for (const pattern of problematicPatterns) {
+    for (const pattern of exactProblems) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
-        const lines = content.substring(0, match.index).split('\n');
-        const lineNumber = lines.length;
-        const startLine = Math.max(0, lineNumber - 3);
-        const endLine = Math.min(content.split('\n').length, lineNumber + 3);
-        const contextLines = content.split('\n').slice(startLine, endLine);
+        const lines = content.split('\n');
+        const lineIndex = content.substring(0, match.index).split('\n').length - 1;
+        const contextStart = Math.max(0, lineIndex - 10);
+        const contextEnd = Math.min(lines.length, lineIndex + 11);
         
         results.push({
           pattern: pattern.source,
           match: match[0],
-          lineNumber,
-          context: contextLines.join('\n'),
-          contextStart: startLine + 1,
-          contextEnd: endLine
+          lineNumber: lineIndex + 1,
+          context: lines.slice(contextStart, contextEnd).join('\n'),
+          fullLine: lines[lineIndex],
+          contextStart: contextStart + 1,
+          contextEnd: contextEnd
         });
       }
     }
     
-    // Also check for any pkce-challenge usage
-    const allPkceUsage = [];
-    if (content.includes('pkce-challenge') || content.includes('index.node.js')) {
-      const lines = content.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('pkce-challenge') || lines[i].includes('index.node.js')) {
-          allPkceUsage.push({
-            line: lines[i],
-            number: i + 1,
-            context: lines.slice(Math.max(0, i-2), Math.min(lines.length, i+3)).join('\n')
-          });
-        }
+    return results;
+  } catch (e) {
+    return [];
+  }
+}
+
+function searchForStringBuilding(filePath) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    // Look for code that might build the problematic string
+    const buildingPatterns = [
+      // Template literals or string concatenation
+      /\$\{[^}]*pkce[^}]*\}/g,
+      /\+\s*["'`][^"'`]*pkce[^"'`]*["'`]/g,
+      /["'`][^"'`]*pkce[^"'`]*["'`]\s*\+/g,
+      // Variable assignments that might contain the problematic code
+      /=\s*["'`][^"'`]*new\s*\(/g,
+      /=\s*["'`][^"'`]*require[^"'`]*["'`]/g,
+      // Function calls that might generate the code
+      /eval\s*\(/g,
+      /Function\s*\(/g,
+      /vm\.runInContext/g,
+    ];
+    
+    const results = [];
+    
+    for (const pattern of buildingPatterns) {
+      const matches = content.matchAll(pattern);
+      for (const match of matches) {
+        const lines = content.split('\n');
+        const lineIndex = content.substring(0, match.index).split('\n').length - 1;
+        const contextStart = Math.max(0, lineIndex - 5);
+        const contextEnd = Math.min(lines.length, lineIndex + 6);
+        
+        results.push({
+          pattern: pattern.source,
+          match: match[0],
+          lineNumber: lineIndex + 1,
+          context: lines.slice(contextStart, contextEnd).join('\n'),
+          fullLine: lines[lineIndex]
+        });
       }
     }
     
-    return { problematic: results, allPkceUsage };
+    return results;
   } catch (e) {
-    return { problematic: [], allPkceUsage: [], error: e.message };
-  }
-}
-
-async function searchForEvalGenerators(packageName) {
-  const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
-  
-  if (!fs.existsSync(packagePath)) {
     return [];
   }
-  
-  const jsFiles = findJSFiles(packagePath);
-  const suspiciousCode = [];
-  
-  for (const file of jsFiles) {
-    try {
-      const content = fs.readFileSync(file, 'utf8');
-      
-      // Look for code that might generate the exact problematic eval
-      const suspiciousPatterns = [
-        // Patterns that could generate: new (require('...').index)()
-        /new\s*\(\s*require\([^)]+\)\.index\s*\)\s*\(/g,
-        // Template strings or concatenation that builds the problematic path
-        /['"`]pkce-challenge\/dist\/index\.node\.js['"`]/g,
-        /['"`].*index\.node\.js['"`]/g,
-        // Function construction patterns
-        /Function\s*\(\s*.*require.*pkce/gi,
-        /eval.*require.*pkce/gi,
-        // Code that might build the eval string
-        /['"`]new\s*\(\s*require\(/g,
-      ];
-      
-      for (const pattern of suspiciousPatterns) {
-        const matches = content.matchAll(pattern);
-        for (const match of matches) {
-          const lines = content.split('\n');
-          const lineIndex = content.substring(0, match.index).split('\n').length - 1;
-          const contextStart = Math.max(0, lineIndex - 5);
-          const contextEnd = Math.min(lines.length, lineIndex + 6);
-          
-          suspiciousCode.push({
-            file: path.relative(packagePath, file),
-            pattern: pattern.source,
-            match: match[0],
-            lineNumber: lineIndex + 1,
-            context: lines.slice(contextStart, contextEnd).join('\n'),
-            fullLine: lines[lineIndex]
-          });
-        }
-      }
-    } catch (e) {
-      // Ignore file read errors
-    }
-  }
-  
-  return suspiciousCode;
 }
 
-async function analyzePackageFiles(packageName) {
+async function deepAnalyzePackage(packageName) {
   const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
   
   if (!fs.existsSync(packagePath)) {
     return { error: 'Package not found' };
   }
   
-  console.log(`\n🔍 Analyzing files in: ${packageName}`);
+  console.log(`\n🔍 DEEP ANALYSIS: ${packageName}`);
   
-  // Find all JS/TS files
   const jsFiles = findJSFiles(packagePath);
-  console.log(`   Found ${jsFiles.length} JS/TS files`);
+  console.log(`   📁 Found ${jsFiles.length} JS/TS files`);
   
-  const results = {
-    packageName,
-    filesWithPkce: [],
-    problematicFiles: [],
-    totalFiles: jsFiles.length
-  };
+  let foundProblems = false;
   
   for (const file of jsFiles) {
-    const analysis = searchForPkceUsage(file);
+    const exactProblems = searchForExactProblem(file);
+    const stringBuilding = searchForStringBuilding(file);
     
-    if (analysis.allPkceUsage.length > 0) {
-      console.log(`   📄 ${path.relative(packagePath, file)} uses pkce-challenge or index.node.js`);
-      results.filesWithPkce.push({
-        file: path.relative(packagePath, file),
-        fullPath: file,
-        pkceUsage: analysis.allPkceUsage,
-        problematic: analysis.problematic
-      });
+    if (exactProblems.length > 0) {
+      console.log(`   🎯 EXACT PROBLEM FOUND in ${path.relative(packagePath, file)}:`);
+      foundProblems = true;
       
-      // Print the actual usage with more context
-      for (const usage of analysis.allPkceUsage) {
-        console.log(`      Line ${usage.number}: ${usage.line.trim()}`);
-        if (usage.context && usage.context !== usage.line) {
-          console.log(`      Context:\n${usage.context.split('\n').map(l => `        ${l}`).join('\n')}`);
-        }
+      for (const problem of exactProblems) {
+        console.log(`      🚨 Line ${problem.lineNumber}: ${problem.match}`);
+        console.log(`         Full line: ${problem.fullLine}`);
+        console.log(`         Context (lines ${problem.contextStart}-${problem.contextEnd}):`);
+        console.log(problem.context.split('\n').map(l => `           ${l}`).join('\n'));
+        console.log(`         Pattern: ${problem.pattern}`);
       }
     }
     
-    if (analysis.problematic.length > 0) {
-      console.log(`   🎯 PROBLEMATIC FILE FOUND: ${path.relative(packagePath, file)}`);
-      results.problematicFiles.push({
-        file: path.relative(packagePath, file),
-        fullPath: file,
-        issues: analysis.problematic
-      });
+    if (stringBuilding.length > 0) {
+      console.log(`   🔧 STRING BUILDING FOUND in ${path.relative(packagePath, file)}:`);
       
-      for (const issue of analysis.problematic) {
-        console.log(`      ❌ Line ${issue.lineNumber}: ${issue.match}`);
-        console.log(`         Pattern: ${issue.pattern}`);
-        console.log(`         Context (lines ${issue.contextStart}-${issue.contextEnd}):`);
-        console.log(issue.context.split('\n').map(l => `           ${l}`).join('\n'));
+      for (const building of stringBuilding) {
+        console.log(`      📝 Line ${building.lineNumber}: ${building.match}`);
+        console.log(`         Full line: ${building.fullLine}`);
+        console.log(`         Context:`);
+        console.log(building.context.split('\n').map(l => `           ${l}`).join('\n'));
       }
     }
   }
-
-  // Also search for eval generators
-  const evalGenerators = await searchForEvalGenerators(packageName);
-  if (evalGenerators.length > 0) {
-    console.log(`   🧨 SUSPICIOUS EVAL GENERATORS FOUND:`);
-    for (const gen of evalGenerators) {
-      console.log(`      📄 ${gen.file}:${gen.lineNumber}`);
-      console.log(`         Match: ${gen.match}`);
-      console.log(`         Full line: ${gen.fullLine}`);
-      console.log(`         Context:\n${gen.context.split('\n').map(l => `           ${l}`).join('\n')}`);
-    }
-    results.evalGenerators = evalGenerators;
-  }
   
-  return results;
-}
-
-async function simulateN8NNodeLoading(packageName) {
-  const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
-  
-  try {
-    // Try to find and load package.json to understand the structure
-    const packageJsonPath = path.join(packagePath, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      
-      console.log(`\n🎯 Simulating n8n loading for: ${packageName}`);
-      console.log(`   Main entry: ${packageJson.main || 'not specified'}`);
-      
-      // Try to load the main entry point the way n8n might
-      if (packageJson.main) {
-        const mainPath = path.join(packagePath, packageJson.main);
-        if (fs.existsSync(mainPath)) {
-          console.log(`   📄 Analyzing main file: ${packageJson.main}`);
-          const analysis = searchForPkceUsage(mainPath);
-          
-          if (analysis.problematic.length > 0) {
-            console.log(`   🎯 MAIN FILE HAS PROBLEMATIC PKCE USAGE!`);
-            for (const issue of analysis.problematic) {
-              console.log(`      ❌ ${issue.match} at line ${issue.lineNumber}`);
-            }
-            return true;
-          }
-        }
-      }
-      
-      // Look for common n8n node patterns
-      const commonNodePaths = [
-        'dist/nodes',
-        'nodes',
-        'src/nodes',
-        'lib/nodes'
-      ];
-      
-      for (const nodePath of commonNodePaths) {
-        const fullNodePath = path.join(packagePath, nodePath);
-        if (fs.existsSync(fullNodePath)) {
-          console.log(`   📁 Found node directory: ${nodePath}`);
-          const nodeFiles = findJSFiles(fullNodePath);
-          
-          for (const nodeFile of nodeFiles) {
-            const analysis = searchForPkceUsage(nodeFile);
-            if (analysis.problematic.length > 0) {
-              console.log(`   🎯 PROBLEMATIC NODE FILE: ${path.relative(packagePath, nodeFile)}`);
-              for (const issue of analysis.problematic) {
-                console.log(`      ❌ ${issue.match} at line ${issue.lineNumber}`);
-              }
-              return true;
-            }
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.log(`   Error simulating load: ${e.message}`);
-  }
-  
-  return false;
+  return { foundProblems, totalFiles: jsFiles.length };
 }
 
 async function main() {
-  console.log('=== Enhanced Node File Analysis ===');
+  console.log('=== AGGRESSIVE PKCE-CHALLENGE HUNTING ===');
   
   const problematicPackages = [];
   
-  // First pass: analyze all n8n node packages
-  const nodePackages = pkgs.filter(pkg => pkg.startsWith('n8n-nodes-') || pkg.includes('n8n-nodes'));
+  // Only analyze n8n node packages
+  const nodePackages = pkgs.filter(pkg => pkg.startsWith('n8n-nodes-') || pkg.includes('n8n-nodes') || pkg.startsWith('@'));
+  
+  console.log(`\n🎯 Analyzing ${nodePackages.length} packages:`);
+  console.log(nodePackages.map(p => `  - ${p}`).join('\n'));
   
   for (const pkg of nodePackages) {
-    const results = await analyzePackageFiles(pkg);
+    const results = await deepAnalyzePackage(pkg);
     
-    if (results.problematicFiles && results.problematicFiles.length > 0) {
+    if (results.foundProblems) {
       problematicPackages.push(pkg);
-      console.log(`\n🚨 FOUND PROBLEMATIC PACKAGE: ${pkg}`);
-    }
-    
-    // Also simulate n8n loading
-    const hasProblematicLoading = await simulateN8NNodeLoading(pkg);
-    if (hasProblematicLoading) {
-      problematicPackages.push(pkg);
+      console.log(`\n🚨 CONFIRMED PROBLEMATIC: ${pkg}`);
     }
   }
   
-  console.log('\n=== FINAL RESULTS ===');
+  console.log('\n=== FINAL HUNTING RESULTS ===');
   if (problematicPackages.length > 0) {
-    console.log(`🎯 Problematic packages found: ${[...new Set(problematicPackages)].join(', ')}`);
+    console.log(`🎯 PROBLEMATIC PACKAGES: ${problematicPackages.join(', ')}`);
+    console.log(`\n📋 REMOVAL COMMAND:`);
+    console.log(`Remove these lines from Dockerfile:`);
+    for (const pkg of problematicPackages) {
+      console.log(`  - ${pkg} \\`);
+    }
   } else {
-    console.log('🤔 No obvious problematic patterns found in static analysis');
-    console.log('   The error might be in dynamic code execution or eval statements');
+    console.log('🤔 No obvious problems found in static analysis');
+    console.log('   The issue might be in compiled/minified code or dynamic generation');
+    
+    // If we can't find it, let's try a different approach
+    console.log('\n🔍 ALTERNATIVE APPROACH: Binary search recommendation');
+    console.log('   Try removing half the packages and see if error persists:');
+    const half1 = nodePackages.slice(0, Math.floor(nodePackages.length / 2));
+    const half2 = nodePackages.slice(Math.floor(nodePackages.length / 2));
+    
+    console.log(`\n   HALF 1 (remove these first):`);
+    half1.forEach(pkg => console.log(`     ${pkg} \\`));
+    
+    console.log(`\n   HALF 2 (keep these):`);
+    half2.forEach(pkg => console.log(`     ${pkg} \\`));
   }
   
   // Test pkce-challenge one more time
-  console.log('\n=== Final PKCE Test ===');
+  console.log('\n=== PKCE Module Test ===');
   try {
     const pkce = require('pkce-challenge');
     const challenge = pkce.generateChallenge();
-    console.log('✅ pkce-challenge.generateChallenge() works correctly');
-    console.log(`   Challenge type: ${typeof challenge}`);
+    console.log('✅ pkce-challenge works correctly');
     console.log(`   Challenge keys: ${Object.keys(challenge).join(', ')}`);
+    console.log(`   .index property: ${typeof pkce.index} (should be undefined)`);
   } catch (e) {
-    console.log('❌ pkce-challenge.generateChallenge() failed:', e.message);
+    console.log('❌ pkce-challenge failed:', e.message);
   }
 }
 
