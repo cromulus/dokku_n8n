@@ -48,8 +48,7 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      github:cromulus/n8n-nodes-graphiti \
      github:cromulus/n8n-nodes-twenty \
      n8n-nodes-webpage-content-extractor \
-     n8n-nodes-websockets-lite \
-     n8n-openapi-node
+     n8n-nodes-websockets-lite
 
 # Add diagnostic script and run it
 COPY debug_packages.js /tmp/debug_packages.js
