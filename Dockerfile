@@ -17,7 +17,7 @@ RUN apk add --update bash python3 curl \
   imagemagick \
   build-base \
   python3-dev \
-  ln -sf python3 /usr/bin/python
+  ln -sf /usr/bin/python3 /usr/bin/python
 
 USER node
 WORKDIR /home/node
