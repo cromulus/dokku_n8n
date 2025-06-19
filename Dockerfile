@@ -32,7 +32,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
 
 RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
-RUN pnpm install @itustudentcouncil/n8n-nodes-basecamp \
+RUN pnpm install --prefix /tmp/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
      n8n-nodes-carbonejs \
