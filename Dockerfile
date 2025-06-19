@@ -20,11 +20,11 @@ RUN apk add --cache-dir=/cache/apk \
 
 USER node
 WORKDIR /home/node
-RUN python3 --cache-dir=/cache/pip -m venv .venv && \
+RUN python3  -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
- pip install --no-cache --upgrade pip && \
- pip install --no-cache --upgrade setuptools wheel tscribe search-engine-parser gtfs-realtime-bindings pynacl nyct-gtfs "search-engine-parser[cli]"
+ pip install --cache-dir=/cache/pip --upgrade pip && \
+ pip install --cache-dir=/cache/pip --upgrade setuptools wheel tscribe search-engine-parser gtfs-realtime-bindings pynacl nyct-gtfs "search-engine-parser[cli]"
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -47,16 +47,6 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
      n8n-nodes-browser
-
-# Permanently removed packages:
-# n8n-nodes-mcp (built into n8n natively)
-# n8n-nodes-odata (not needed, was causing pkce-challenge issue)
-
-
-
-# Add diagnostic script and run it
-# COPY debug_packages.js /tmp/debug_packages.js
-# RUN cd /tmp/n8n-nodes && NODE_PATH=/tmp/n8n-nodes/node_modules node /tmp/debug_packages.js
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
