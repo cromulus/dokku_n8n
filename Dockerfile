@@ -31,6 +31,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
 
+RUN mkdir -p /tmp/n8n-nodes
 RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
 RUN pnpm install --prefix /tmp/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
@@ -52,9 +53,7 @@ ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
-# ENV N8N_LOG_LEVEL=debug
-# ENV N8N_LOG_OUTPUT=console
-# ENV DEBUG=n8n*
+
 
 COPY setup.sh /home/node/setup.sh
 RUN /home/node/setup.sh
