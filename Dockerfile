@@ -45,11 +45,15 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      n8n-nodes-text-manipulation \
      n8n-nodes-turndown-html-to-markdown \
      n8n-nodes-tweetnacl \
+     github:cromulus/n8n-nodes-graphiti \
+     github:cromulus/n8n-nodes-twenty \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
      n8n-openapi-node
-#     github:cromulus/n8n-nodes-graphiti \
-#     github:cromulus/n8n-nodes-twenty \
+
+# Add diagnostic script and run it
+COPY debug_packages.js /tmp/debug_packages.js
+RUN cd /tmp/n8n-nodes && NODE_PATH=/tmp/n8n-nodes/node_modules node /tmp/debug_packages.js
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
