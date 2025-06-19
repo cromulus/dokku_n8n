@@ -35,7 +35,6 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
     pnpm install @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
-     n8n-nodes-browser \
      n8n-nodes-carbonejs \
      n8n-nodes-globals \
      n8n-nodes-logger \
@@ -49,6 +48,7 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      github:cromulus/n8n-nodes-twenty \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite
+     # n8n-openapi-node # DO NOT ADD THIS NODE
 
 # Add diagnostic script and run it
 COPY debug_packages.js /tmp/debug_packages.js
