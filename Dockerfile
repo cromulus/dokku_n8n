@@ -35,14 +35,16 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
     pnpm install @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
-     n8n-nodes-carbonejs
+     n8n-nodes-carbonejs \
+     n8n-nodes-globals \
+     n8n-nodes-logger
 
-# BINARY SEARCH - FIRST QUARTER (4 packages)
-# Removed from first half for testing:
-#     n8n-nodes-globals \
-#     n8n-nodes-logger \
-#     n8n-nodes-mcp \
+# BINARY SEARCH - Testing first 2 from problematic quarter
+# Currently testing: n8n-nodes-globals, n8n-nodes-logger
+# Temporarily removed:
 #     n8n-nodes-odata
+# Permanently removed (built into n8n now):
+#     n8n-nodes-mcp
 
 # Still removed from second half:
 #     n8n-nodes-puppeteer-extended \
