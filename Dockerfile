@@ -35,14 +35,16 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
     pnpm install @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
-     n8n-nodes-carbonejs \
-     n8n-nodes-globals \
-     n8n-nodes-logger \
-     n8n-nodes-mcp \
-     n8n-nodes-odata
+     n8n-nodes-carbonejs
 
-# BINARY SEARCH - FIRST HALF (8 packages)
-# Removed temporarily for testing:
+# BINARY SEARCH - FIRST QUARTER (4 packages)
+# Removed from first half for testing:
+#     n8n-nodes-globals \
+#     n8n-nodes-logger \
+#     n8n-nodes-mcp \
+#     n8n-nodes-odata
+
+# Still removed from second half:
 #     n8n-nodes-puppeteer-extended \
 #     n8n-nodes-text-manipulation \
 #     n8n-nodes-turndown-html-to-markdown \
@@ -54,8 +56,8 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
 #     n8n-nodes-browser
 
 # Add diagnostic script and run it
-COPY debug_packages.js /tmp/debug_packages.js
-RUN cd /tmp/n8n-nodes && NODE_PATH=/tmp/n8n-nodes/node_modules node /tmp/debug_packages.js
+# COPY debug_packages.js /tmp/debug_packages.js
+# RUN cd /tmp/n8n-nodes && NODE_PATH=/tmp/n8n-nodes/node_modules node /tmp/debug_packages.js
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
