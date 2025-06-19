@@ -37,25 +37,22 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      n8n-nodes-advanced-flow \
      n8n-nodes-carbonejs \
      n8n-nodes-globals \
-     n8n-nodes-logger
+     n8n-nodes-logger \
+     n8n-nodes-puppeteer-extended \
+     n8n-nodes-text-manipulation \
+     n8n-nodes-turndown-html-to-markdown \
+     n8n-nodes-tweetnacl \
+     github:cromulus/n8n-nodes-graphiti \
+     github:cromulus/n8n-nodes-twenty \
+     n8n-nodes-webpage-content-extractor \
+     n8n-nodes-websockets-lite \
+     n8n-nodes-browser
 
-# BINARY SEARCH - Testing first 2 from problematic quarter
-# Currently testing: n8n-nodes-globals, n8n-nodes-logger
-# Temporarily removed:
-#     n8n-nodes-odata
-# Permanently removed (built into n8n now):
-#     n8n-nodes-mcp
+# Permanently removed packages:
+# n8n-nodes-mcp (built into n8n natively)
+# n8n-nodes-odata (not needed, was causing pkce-challenge issue)
 
-# Still removed from second half:
-#     n8n-nodes-puppeteer-extended \
-#     n8n-nodes-text-manipulation \
-#     n8n-nodes-turndown-html-to-markdown \
-#     n8n-nodes-tweetnacl \
-#     github:cromulus/n8n-nodes-graphiti \
-#     github:cromulus/n8n-nodes-twenty \
-#     n8n-nodes-webpage-content-extractor \
-#     n8n-nodes-websockets-lite \
-#     n8n-nodes-browser
+
 
 # Add diagnostic script and run it
 # COPY debug_packages.js /tmp/debug_packages.js
@@ -65,9 +62,9 @@ ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
-ENV N8N_LOG_LEVEL=debug
-ENV N8N_LOG_OUTPUT=console
-ENV DEBUG=n8n*
+# ENV N8N_LOG_LEVEL=debug
+# ENV N8N_LOG_OUTPUT=console
+# ENV DEBUG=n8n*
 
 COPY setup.sh /home/node/setup.sh
 RUN /home/node/setup.sh
