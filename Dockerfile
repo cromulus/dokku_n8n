@@ -58,6 +58,9 @@ ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
+ENV N8N_LOG_LEVEL=debug
+ENV N8N_LOG_OUTPUT=console
+ENV DEBUG=n8n*
 
 COPY setup.sh /home/node/setup.sh
 RUN /home/node/setup.sh

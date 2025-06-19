@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const pkgs = [
   'pkce-challenge',
   'lodash',
@@ -29,122 +32,228 @@ const pkgs = [
   'n8n-nodes-websockets-lite'
 ];
 
-function checkDependsOnPkce(packageName) {
+function findJSFiles(dir, files = []) {
   try {
-    const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}/package.json`;
-    const fs = require('fs');
-    if (fs.existsSync(packagePath)) {
-      const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-      const allDeps = {
-        ...pkg.dependencies,
-        ...pkg.devDependencies,
-        ...pkg.peerDependencies
-      };
-      return Object.keys(allDeps).includes('pkce-challenge');
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
+        findJSFiles(fullPath, files);
+      } else if (item.endsWith('.js') || item.endsWith('.ts')) {
+        files.push(fullPath);
+      }
     }
   } catch (e) {
     // Ignore errors
   }
-  return false;
+  return files;
 }
 
-async function inspect(name) {
-  const dependsOnPkce = checkDependsOnPkce(name);
-  
+function searchForPkceUsage(filePath) {
   try {
-    console.log(`\n🔍 Testing package: ${name}${dependsOnPkce ? ' (depends on pkce-challenge)' : ''}`);
+    const content = fs.readFileSync(filePath, 'utf8');
     
-    const mod = require(name);
+    // Look for the problematic pattern: require(...).index
+    const problematicPatterns = [
+      /require\([^)]*pkce-challenge[^)]*\)\.index/g,
+      /new.*require\([^)]*pkce-challenge[^)]*\)\.index/g,
+      /pkce-challenge.*\.index/g,
+      /new.*pkce.*index/g
+    ];
     
-    console.log('✅ require() successful');
-    console.log(`   Type: ${typeof mod}`);
-    console.log(`   Keys: ${Object.keys(mod).length > 0 ? Object.keys(mod).slice(0, 10).join(', ') + (Object.keys(mod).length > 10 ? '...' : '') : 'none'}`);
+    const results = [];
     
-  } catch (e) {
-    console.log('❌ require() failed');
-    console.log(`   Error: ${e.message}`);
-    console.log(`   Stack: ${e.stack.split('\n')[0]}`);
-    
-    // Check if this is specifically the pkce-challenge constructor error
-    if (e.message.includes('is not a constructor') && 
-        (e.stack.includes('pkce-challenge') || e.message.includes('index'))) {
-      console.log('🎯 THIS IS THE PACKAGE CAUSING THE PKCE-CHALLENGE ISSUE!');
-      console.log(`   Full error stack:`);
-      console.log(e.stack.split('\n').slice(0, 5).map(line => `   ${line}`).join('\n'));
-    }
-    
-    return false;
-  }
-  
-  return true;
-}
-
-async function deepInspectPkceUsage() {
-  console.log('\n=== Deep PKCE Analysis ===');
-  
-  // Check which packages actually have pkce-challenge in their node_modules
-  const fs = require('fs');
-  const path = require('path');
-  
-  try {
-    const nodeModulesPath = '/tmp/n8n-nodes/node_modules';
-    const dirs = fs.readdirSync(nodeModulesPath);
-    
-    for (const dir of dirs) {
-      if (dir.startsWith('.') || dir.startsWith('@')) continue;
-      
-      const pkceInSubModule = path.join(nodeModulesPath, dir, 'node_modules', 'pkce-challenge');
-      if (fs.existsSync(pkceInSubModule)) {
-        console.log(`📦 ${dir} has its own pkce-challenge dependency`);
+    for (const pattern of problematicPatterns) {
+      const matches = content.matchAll(pattern);
+      for (const match of matches) {
+        const lines = content.substring(0, match.index).split('\n');
+        const lineNumber = lines.length;
+        const lineContent = lines[lines.length - 1] + content.substring(match.index).split('\n')[0];
+        
+        results.push({
+          pattern: pattern.source,
+          match: match[0],
+          lineNumber,
+          lineContent,
+          context: content.substring(Math.max(0, match.index - 100), match.index + 100)
+        });
       }
     }
     
-    // Check @scoped packages
-    const scopedDirs = dirs.filter(d => d.startsWith('@'));
-    for (const scopedDir of scopedDirs) {
-      const scopePath = path.join(nodeModulesPath, scopedDir);
-      const subDirs = fs.readdirSync(scopePath);
-      for (const subDir of subDirs) {
-        const pkceInSubModule = path.join(scopePath, subDir, 'node_modules', 'pkce-challenge');
-        if (fs.existsSync(pkceInSubModule)) {
-          console.log(`📦 ${scopedDir}/${subDir} has its own pkce-challenge dependency`);
+    // Also check for any pkce-challenge usage
+    if (content.includes('pkce-challenge')) {
+      const pkceLines = content.split('\n')
+        .map((line, i) => ({ line, number: i + 1 }))
+        .filter(({ line }) => line.includes('pkce-challenge'));
+      
+      return { problematic: results, allPkceUsage: pkceLines };
+    }
+    
+    return { problematic: results, allPkceUsage: [] };
+  } catch (e) {
+    return { problematic: [], allPkceUsage: [], error: e.message };
+  }
+}
+
+async function analyzePackageFiles(packageName) {
+  const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
+  
+  if (!fs.existsSync(packagePath)) {
+    return { error: 'Package not found' };
+  }
+  
+  console.log(`\n🔍 Analyzing files in: ${packageName}`);
+  
+  // Find all JS/TS files
+  const jsFiles = findJSFiles(packagePath);
+  console.log(`   Found ${jsFiles.length} JS/TS files`);
+  
+  const results = {
+    packageName,
+    filesWithPkce: [],
+    problematicFiles: [],
+    totalFiles: jsFiles.length
+  };
+  
+  for (const file of jsFiles) {
+    const analysis = searchForPkceUsage(file);
+    
+    if (analysis.allPkceUsage.length > 0) {
+      console.log(`   📄 ${path.relative(packagePath, file)} uses pkce-challenge`);
+      results.filesWithPkce.push({
+        file: path.relative(packagePath, file),
+        fullPath: file,
+        pkceUsage: analysis.allPkceUsage,
+        problematic: analysis.problematic
+      });
+      
+      // Print the actual usage
+      for (const usage of analysis.allPkceUsage) {
+        console.log(`      Line ${usage.number}: ${usage.line.trim()}`);
+      }
+    }
+    
+    if (analysis.problematic.length > 0) {
+      console.log(`   🎯 PROBLEMATIC FILE FOUND: ${path.relative(packagePath, file)}`);
+      results.problematicFiles.push({
+        file: path.relative(packagePath, file),
+        fullPath: file,
+        issues: analysis.problematic
+      });
+      
+      for (const issue of analysis.problematic) {
+        console.log(`      ❌ Line ${issue.lineNumber}: ${issue.match}`);
+        console.log(`         Context: ${issue.context.replace(/\n/g, ' ')}`);
+      }
+    }
+  }
+  
+  return results;
+}
+
+async function simulateN8NNodeLoading(packageName) {
+  const packagePath = `/tmp/n8n-nodes/node_modules/${packageName}`;
+  
+  try {
+    // Try to find and load package.json to understand the structure
+    const packageJsonPath = path.join(packagePath, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      
+      console.log(`\n🎯 Simulating n8n loading for: ${packageName}`);
+      console.log(`   Main entry: ${packageJson.main || 'not specified'}`);
+      
+      // Try to load the main entry point the way n8n might
+      if (packageJson.main) {
+        const mainPath = path.join(packagePath, packageJson.main);
+        if (fs.existsSync(mainPath)) {
+          console.log(`   📄 Analyzing main file: ${packageJson.main}`);
+          const analysis = searchForPkceUsage(mainPath);
+          
+          if (analysis.problematic.length > 0) {
+            console.log(`   🎯 MAIN FILE HAS PROBLEMATIC PKCE USAGE!`);
+            for (const issue of analysis.problematic) {
+              console.log(`      ❌ ${issue.match} at line ${issue.lineNumber}`);
+            }
+            return true;
+          }
+        }
+      }
+      
+      // Look for common n8n node patterns
+      const commonNodePaths = [
+        'dist/nodes',
+        'nodes',
+        'src/nodes',
+        'lib/nodes'
+      ];
+      
+      for (const nodePath of commonNodePaths) {
+        const fullNodePath = path.join(packagePath, nodePath);
+        if (fs.existsSync(fullNodePath)) {
+          console.log(`   📁 Found node directory: ${nodePath}`);
+          const nodeFiles = findJSFiles(fullNodePath);
+          
+          for (const nodeFile of nodeFiles) {
+            const analysis = searchForPkceUsage(nodeFile);
+            if (analysis.problematic.length > 0) {
+              console.log(`   🎯 PROBLEMATIC NODE FILE: ${path.relative(packagePath, nodeFile)}`);
+              for (const issue of analysis.problematic) {
+                console.log(`      ❌ ${issue.match} at line ${issue.lineNumber}`);
+              }
+              return true;
+            }
+          }
         }
       }
     }
-    
   } catch (e) {
-    console.log('Error during deep inspection:', e.message);
+    console.log(`   Error simulating load: ${e.message}`);
   }
+  
+  return false;
 }
 
 async function main() {
-  console.log('=== Enhanced Package Inspection Report ===');
+  console.log('=== Enhanced Node File Analysis ===');
   
-  let successfulPackages = [];
-  let failedPackages = [];
+  const problematicPackages = [];
   
-  for (const pkg of pkgs) {
-    const success = await inspect(pkg);
-    if (success) {
-      successfulPackages.push(pkg);
-    } else {
-      failedPackages.push(pkg);
+  // First pass: analyze all n8n node packages
+  const nodePackages = pkgs.filter(pkg => pkg.startsWith('n8n-nodes-') || pkg.includes('n8n-nodes'));
+  
+  for (const pkg of nodePackages) {
+    const results = await analyzePackageFiles(pkg);
+    
+    if (results.problematicFiles && results.problematicFiles.length > 0) {
+      problematicPackages.push(pkg);
+      console.log(`\n🚨 FOUND PROBLEMATIC PACKAGE: ${pkg}`);
+    }
+    
+    // Also simulate n8n loading
+    const hasProblematicLoading = await simulateN8NNodeLoading(pkg);
+    if (hasProblematicLoading) {
+      problematicPackages.push(pkg);
     }
   }
   
-  await deepInspectPkceUsage();
+  console.log('\n=== FINAL RESULTS ===');
+  if (problematicPackages.length > 0) {
+    console.log(`🎯 Problematic packages found: ${[...new Set(problematicPackages)].join(', ')}`);
+  } else {
+    console.log('🤔 No obvious problematic patterns found in static analysis');
+    console.log('   The error might be in dynamic code execution or eval statements');
+  }
   
-  console.log('\n=== Summary ===');
-  console.log(`✅ Successful packages (${successfulPackages.length}): ${successfulPackages.slice(0, 5).join(', ')}${successfulPackages.length > 5 ? '...' : ''}`);
-  console.log(`❌ Failed packages (${failedPackages.length}): ${failedPackages.join(', ')}`);
-  
-  // Test pkce-challenge one more time to confirm it works
+  // Test pkce-challenge one more time
   console.log('\n=== Final PKCE Test ===');
   try {
     const pkce = require('pkce-challenge');
     const challenge = pkce.generateChallenge();
     console.log('✅ pkce-challenge.generateChallenge() works correctly');
-    console.log(`   Challenge created: ${challenge.codeChallenge.substring(0, 20)}...`);
+    console.log(`   Challenge type: ${typeof challenge}`);
+    console.log(`   Challenge keys: ${Object.keys(challenge).join(', ')}`);
   } catch (e) {
     console.log('❌ pkce-challenge.generateChallenge() failed:', e.message);
   }
