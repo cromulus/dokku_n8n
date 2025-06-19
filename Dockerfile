@@ -39,17 +39,19 @@ RUN mkdir -p /tmp/n8n-nodes && cd /tmp/n8n-nodes && \
      n8n-nodes-globals \
      n8n-nodes-logger \
      n8n-nodes-mcp \
-     n8n-nodes-odata \
-     n8n-nodes-puppeteer-extended \
-     n8n-nodes-text-manipulation \
-     n8n-nodes-turndown-html-to-markdown \
-     n8n-nodes-tweetnacl \
-     github:cromulus/n8n-nodes-graphiti \
-     github:cromulus/n8n-nodes-twenty \
-     n8n-nodes-webpage-content-extractor \
-     n8n-nodes-websockets-lite \
-     n8n-nodes-browser
-     # n8n-openapi-node # DO NOT ADD THIS NODE
+     n8n-nodes-odata
+
+# BINARY SEARCH - FIRST HALF (8 packages)
+# Removed temporarily for testing:
+#     n8n-nodes-puppeteer-extended \
+#     n8n-nodes-text-manipulation \
+#     n8n-nodes-turndown-html-to-markdown \
+#     n8n-nodes-tweetnacl \
+#     github:cromulus/n8n-nodes-graphiti \
+#     github:cromulus/n8n-nodes-twenty \
+#     n8n-nodes-webpage-content-extractor \
+#     n8n-nodes-websockets-lite \
+#     n8n-nodes-browser
 
 # Add diagnostic script and run it
 COPY debug_packages.js /tmp/debug_packages.js
