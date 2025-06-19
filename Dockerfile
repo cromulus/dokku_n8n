@@ -4,8 +4,9 @@ FROM n8nio/n8n:latest
 USER root
 
 ENV PYTHONUNBUFFERED=1
+RUN setup-apkcache
 RUN apk add --update bash python3 curl && ln -sf python3 /usr/bin/python
-RUN apk add \
+RUN apk add --update\
   chromium \
   chromium-chromedriver \
   nss \
@@ -20,7 +21,7 @@ RUN apk add \
 
 USER node
 WORKDIR /home/node
-
+RUN mkdir -p /home/node/.cache/
 RUN python3  -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
@@ -31,9 +32,9 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PYTHONUNBUFFERED=1
 
-RUN mkdir -p /tmp/n8n-nodes
+RUN mkdir -p /home/node/.cache/n8n-nodes
 RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
-RUN pnpm install --prefix /tmp/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
+RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
      n8n-nodes-carbonejs \
@@ -50,7 +51,7 @@ RUN pnpm install --prefix /tmp/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      n8n-nodes-browser
 
 ENV NODE_ENV=production
-ENV N8N_CUSTOM_EXTENSIONS=/tmp/n8n-nodes
+ENV N8N_CUSTOM_EXTENSIONS=/home/node/.cache/n8n-nodes
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
