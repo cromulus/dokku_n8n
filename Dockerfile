@@ -19,7 +19,9 @@ RUN --mount=type=cache,target=/etc/apk/cache apk add --update-cache bash python3
 
 USER node
 WORKDIR /home/node
-RUN mkdir -p /home/node/.cache/
+
+RUN mkdir -p /home/node/.cache/n8n-nodes
+
 RUN --mount=type=cache,target=/home/node/.venv,uid=1000,gid=1000 \
  --mount=type=cache,target=/home/node/.cache/pip,uid=1000,gid=1000 \
  python3  -m venv .venv && \
@@ -35,6 +37,7 @@ ENV PYTHONUNBUFFERED=1
 RUN --mount=type=cache,target=/home/node/node_modules/,uid=1000,gid=1000 \
 --mount=type=cache,target=/home/node/.cache/pnpm,uid=1000,gid=1000 \
 pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
+
 RUN --mount=type=cache,target=/home/node/.cache/n8n-nodes,uid=1000,gid=1000 pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
      n8n-nodes-advanced-flow \
