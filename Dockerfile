@@ -47,9 +47,11 @@ RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nod
      n8n-nodes-tweetnacl \
      github:cromulus/n8n-nodes-graphiti \
      github:cromulus/n8n-nodes-twenty \
+     github:nerding-io/n8n-nodes-mcp.git \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
-     n8n-nodes-browser
+     n8n-nodes-browser \
+     n8n-nodes-mcp
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/home/node/.cache/n8n-nodes
