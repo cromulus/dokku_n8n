@@ -50,8 +50,7 @@ RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nod
      github:nerding-io/n8n-nodes-mcp.git \
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
-     n8n-nodes-browser \
-     n8n-nodes-mcp
+     n8n-nodes-browser
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/home/node/.cache/n8n-nodes
