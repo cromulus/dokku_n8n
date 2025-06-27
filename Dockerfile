@@ -45,7 +45,7 @@ RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nod
      n8n-nodes-text-manipulation \
      n8n-nodes-turndown-html-to-markdown \
      n8n-nodes-tweetnacl \
-     github:n8n-io/n8n-nodes-reminders \
+     github:cromulus/n8n-nodes-reminders \
      github:cromulus/n8n-nodes-graphiti \
      github:cromulus/n8n-nodes-twenty \
      github:nerding-io/n8n-nodes-mcp.git \
