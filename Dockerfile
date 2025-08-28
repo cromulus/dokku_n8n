@@ -22,6 +22,9 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python
 USER node
 WORKDIR /home/node
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 RUN python3  -m venv .venv && \
  source .venv/bin/activate && \
  python3 -m ensurepip && \
