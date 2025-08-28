@@ -19,11 +19,11 @@ RUN apk add --update bash python3 curl \
   python3-dev
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
+# Install pnpm globally as root
+RUN npm install -g pnpm
+
 USER node
 WORKDIR /home/node
-
-# Install pnpm globally
-RUN npm install -g pnpm
 
 RUN python3  -m venv .venv && \
  source .venv/bin/activate && \
