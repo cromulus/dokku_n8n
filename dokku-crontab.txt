@@ -1,0 +1,14 @@
+# Crontab entries for Dokku server to keep n8n updated
+# Add these to root's crontab on your Dokku server with: sudo crontab -e
+
+# Update n8n weekly (every Sunday at 3 AM)
+0 3 * * 0 /usr/local/bin/dokku-update-n8n.sh >> /var/log/dokku-n8n-update.log 2>&1
+
+# Alternative: Update n8n daily at 3 AM (if you want more frequent updates)
+# 0 3 * * * /usr/local/bin/dokku-update-n8n.sh >> /var/log/dokku-n8n-update.log 2>&1
+
+# Optional: Cleanup Docker system weekly (every Sunday at 4 AM)
+0 4 * * 0 docker system prune -af --volumes >> /var/log/docker-cleanup.log 2>&1
+
+# Optional: Restart n8n weekly to ensure stability (every Sunday at 5 AM)
+0 5 * * 0 dokku ps:restart n8n >> /var/log/dokku-n8n-restart.log 2>&1
