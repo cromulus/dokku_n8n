@@ -22,6 +22,3 @@ echo "export $PATH=$PATH:/home/node/.local/bin" >> /home/node/.profile
 # fi
 
 # chown -R node /home/node
-
-# Install node from storage if available
-/home/node/install-storage-node.sh
