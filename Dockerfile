@@ -22,6 +22,12 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python
 # Install pnpm globally as root
 RUN npm install -g pnpm
 
+# Copy and setup scripts while we're still root
+COPY setup.sh /home/node/setup.sh
+COPY install-storage-node.sh /home/node/install-storage-node.sh
+RUN chown node:node /home/node/setup.sh /home/node/install-storage-node.sh && \
+    chmod +x /home/node/setup.sh /home/node/install-storage-node.sh
+
 USER node
 WORKDIR /home/node
 
@@ -64,10 +70,6 @@ ENV NODE_FUNCTION_ALLOW_EXTERNAL=*
 ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
 # getting the environment variables in the right format
-COPY setup.sh /home/node/setup.sh
-COPY install-storage-node.sh /home/node/install-storage-node.sh
-RUN chown node:node /home/node/setup.sh /home/node/install-storage-node.sh && \
-    chmod +x /home/node/setup.sh /home/node/install-storage-node.sh
 RUN /home/node/setup.sh
 ENTRYPOINT []
 EXPOSE 5678/tcp
