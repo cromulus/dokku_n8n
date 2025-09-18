@@ -27,9 +27,6 @@ COPY setup.sh /home/node/setup.sh
 RUN chown node:node /home/node/setup.sh && \
     chmod +x /home/node/setup.sh
 
-# Copy the tarball and install the custom node
-COPY reminders-api.tar.gz /tmp/reminders-api.tar.gz
-
 USER node
 WORKDIR /home/node
 
@@ -64,8 +61,7 @@ RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nod
      n8n-nodes-webpage-content-extractor \
      n8n-nodes-websockets-lite \
      n8n-nodes-browser \
-     n8n-nodes-document-generator \
-     /tmp/reminders-api.tar.gz
+     n8n-nodes-document-generator
 
 ENV NODE_ENV=production
 ENV N8N_CUSTOM_EXTENSIONS=/home/node/.cache/n8n-nodes
