@@ -38,10 +38,6 @@ ENV PYTHONUNBUFFERED=1
 RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-transcription-to-vtt puppeteer tweetnacl gtfs-realtime-bindings node-fetch
 
 RUN mkdir -p /home/node/.cache/n8n-nodes
-# Copy the runtime installation script
-COPY install-storage-node.sh /home/node/install-storage-node.sh
-RUN chown node:node /home/node/install-storage-node.sh && \
-    chmod +x /home/node/install-storage-node.sh
 
 RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
@@ -69,6 +65,9 @@ ENV NODE_FUNCTION_ALLOW_BUILTIN=*
 
 # getting the environment variables in the right format
 COPY setup.sh /home/node/setup.sh
+COPY install-storage-node.sh /home/node/install-storage-node.sh
+RUN chown node:node /home/node/setup.sh /home/node/install-storage-node.sh && \
+    chmod +x /home/node/setup.sh /home/node/install-storage-node.sh
 RUN /home/node/setup.sh
 ENTRYPOINT []
 EXPOSE 5678/tcp
