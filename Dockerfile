@@ -40,7 +40,8 @@ RUN pnpm install lodash pdf-parse filenamify-url @mozilla/readability jsdom aws-
 RUN mkdir -p /home/node/.cache/n8n-nodes
 # Copy the runtime installation script
 COPY install-storage-node.sh /home/node/install-storage-node.sh
-RUN chmod +x /home/node/install-storage-node.sh
+RUN chown node:node /home/node/install-storage-node.sh && \
+    chmod +x /home/node/install-storage-node.sh
 
 RUN pnpm install --prefix /home/node/.cache/n8n-nodes @itustudentcouncil/n8n-nodes-basecamp \
      @n8n-zengchao/n8n-nodes-browserless \
