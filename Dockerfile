@@ -1,5 +1,5 @@
 ARG CACHEBUST=1
-FROM n8nio/n8n:latest
+FROM n8nio/n8n:2.2.6
 
 USER root
 
